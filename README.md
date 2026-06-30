@@ -39,8 +39,12 @@ Three Python scripts handle the pipeline:
 **Dashboard 1 — The Efficiency Paradox**
 The headline arc: total residential energy use per household from 1960–2024, with the fuel-type breakdown (electricity, natural gas, petroleum) stacked underneath to show how the energy mix shifted over time. Peak, latest, and percent decline called out directly.
 
+![Dashboard 1 - The Efficiency Paradox](screenshots/dashboard-1-the-long-arc.png)
+
 **Dashboard 2 — The Price of Standing Still**
 Zooms into the modern era, 2001–2024, where price data actually exists. A dual-axis line chart puts electricity consumption per household next to price per kWh — consumption is essentially flat, price is not. Total electricity sales volume sits underneath for context.
+
+![Dashboard 2 - The Price of Standing Still](screenshots/dashboard-2-the-price-of-standing-still.png)
 
 ## Key Findings
 
