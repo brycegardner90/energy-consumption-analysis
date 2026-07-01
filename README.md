@@ -10,66 +10,101 @@ But at the same time, we've added a ton of new load to the grid that didn't exis
 
 I wanted to pull the real numbers and find out — not guess, not assume, just look at 60+ years of data and see what the trend actually says.
 
+## V2 Update — Built from LinkedIn Feedback
+
+After publishing the original project, [Matt Meier](https://www.linkedin.com/in/matt-meier-msda-mba/) (Director of Investment Data Operations, 1x Tableau Viz of the Day) raised two critical points:
+
+1. **Inflation matters** — nominal electricity prices climbing 92% since 2001 looks alarming, but how does that compare to general inflation? Are people actually paying more in real terms?
+2. **Energy mix matters** — do states running on cleaner energy sources have more stable prices than fossil-fuel-heavy states?
+
+Both were exactly right. Dashboard 3 is a direct response to that feedback, built with a new dataset pulling state-level Southeast electricity prices, CPI adjustment, and generation mix by fuel type.
+
 ## What I Found
 
-Household energy consumption peaked hard in the early-to-mid 1970s, right around the oil crisis, then fell off a cliff once efficiency standards kicked in through the 80s and 90s. From there it's been a long, bumpy decline — total residential energy per household is down about 35% from its peak.
+**National picture (Dashboards 1 & 2):**
+Household energy consumption peaked hard in the early-to-mid 1970s right around the oil crisis, then fell off a cliff once efficiency standards kicked in through the 80s and 90s. Total residential energy per household is down about 35% from its peak. But zoom into just the last 20+ years and electricity consumption per household has barely moved, while the price per kilowatt-hour has climbed 92%. So even in the era of "smart" and efficient everything, people are paying a lot more to use roughly the same amount of power.
 
-But zoom into just the last 20+ years and a different story shows up: electricity consumption per household has barely moved, while the price per kilowatt-hour has climbed 92%. So even in the era of supposedly "smart" and efficient everything, people are paying a lot more to use roughly the same amount of power. That's the paradox — efficiency won the long game, but the savings haven't kept showing up where you'd expect them to in the recent era.
+**The inflation-adjusted reality (Dashboard 3):**
+Once you adjust for inflation the story changes. In 2001 you paid 8.58¢/kWh — but in today's dollars that same price is worth 15.22¢. You're actually paying 16.48¢ now, meaning electricity outpaced general inflation by only about 1.26¢ over 23 years. The average annual delta vs. inflation across the entire period is just 0.11% — essentially a wash. The 92% nominal increase sounds dramatic. The real increase is much more modest.
+
+**The Southeast energy mix:**
+South Carolina and Tennessee run the cleanest grids in the region, with over 50% clean generation. Mississippi and Louisiana sit at the opposite end — almost entirely fossil fuel dependent. Whether that correlates with long-term price stability is the next question worth exploring.
 
 ## Tools
 
 | Tool | Role |
 |---|---|
 | Python (pandas, requests) | API/bulk data pulls, cleaning, merging |
-| EIA API v2 | Electricity retail sales & price data (2001–2024) |
+| EIA API v2 | Electricity retail sales, price, and generation by fuel type |
 | EIA SEDS bulk data | Residential energy by fuel type (1960–2024) |
-| Power BI Desktop | Dashboard build, DAX measures |
+| BLS CPI-U | Hardcoded annual averages for inflation adjustment |
+| Power BI Desktop | All three dashboards, DAX measures |
 | US Census data | Population & housing unit normalization |
 
 ## Methodology
 
-Three Python scripts handle the pipeline:
+**Scripts 01–03** handle the national pipeline:
+1. **EIA API pull** — national residential electricity sales and price, 2001–2024
+2. **SEDS bulk pull** — residential energy by fuel type back to 1960
+3. **Merge & clean** — joins both datasets, normalizes per household using Census figures, tags era labels
 
-1. **EIA API pull** — grabs national residential electricity sales (million kWh) and average price (¢/kWh), annual, 2001–2024.
-2. **SEDS bulk pull** — downloads EIA's State Energy Data System ZIP directly (no API key needed for this one) and extracts US-level residential consumption by fuel type — electricity, natural gas, and petroleum — going all the way back to 1960.
-3. **Merge & clean** — joins both datasets together, layers in Census population and housing unit figures, and calculates the per-household and per-capita metrics that actually make the numbers comparable across 64 years of population growth. Also tags every year with an "era" label (Energy Crisis, Efficiency Standards Begin, Digital Age Explosion, AI & EV Era, etc.) for context.
+**Script 04** handles the Southeast V2 pipeline:
+- Pulls state-level residential electricity prices for 9 Southeast states (AL, AR, FL, GA, LA, MS, NC, SC, TN) plus US national from EIA API
+- Pulls generation by fuel type (Coal, Natural Gas, Nuclear, Hydro, Wind, Solar) per state from EIA electric power operational data
+- Applies BLS CPI-U deflator (hardcoded, base year 2024) to compute real prices
+- Calculates YoY nominal vs. real price changes and delta vs. inflation
+- Outputs three CSVs: `electricity_vs_inflation.csv`, `generation_by_source.csv`, `combined_analysis.csv`
 
 ## Dashboards
 
 **Dashboard 1 — The Efficiency Paradox**
-The headline arc: total residential energy use per household from 1960–2024, with the fuel-type breakdown (electricity, natural gas, petroleum) stacked underneath to show how the energy mix shifted over time. Peak, latest, and percent decline called out directly.
+The headline arc: total residential energy use per household from 1960–2024, with the fuel-type breakdown stacked underneath. Peak, latest, and percent decline called out as KPIs.
 
-![Dashboard 1 - The Efficiency Paradox](screenshots/dashboard-1-the-long-arc.png)
+![Dashboard 1 - The Efficiency Paradox](screenshots/dashboard-1-the-efficiency-paradox.png)
 
 **Dashboard 2 — The Price of Standing Still**
-Zooms into the modern era, 2001–2024, where price data actually exists. A dual-axis line chart puts electricity consumption per household next to price per kWh — consumption is essentially flat, price is not. Total electricity sales volume sits underneath for context.
+2001–2024 only. Dual-axis line chart puts electricity consumption per household next to price per kWh — consumption is essentially flat, price is not. Total electricity sales volume and KPI cards complete the picture.
 
 ![Dashboard 2 - The Price of Standing Still](screenshots/dashboard-2-the-price-of-standing-still.png)
+
+**Dashboard 3 — The Real Price of Power** *(Added in V2, prompted by LinkedIn feedback)*
+Southeast state-level analysis with inflation adjustment. Nominal vs. real price comparison, year-by-year delta vs. inflation bar chart, and 2024 energy mix by state. Directly addresses the question: did electricity actually outpace inflation?
+
+![Dashboard 3 - The Real Price of Power](screenshots/dashboard-3-the-real-price-of-power.png)
 
 ## Key Findings
 
 - Peak household energy consumption: ~197K MMBtu (early-to-mid 1970s)
-- Latest (2024): ~128K MMBtu — a 35% decline from peak
-- Electricity price per kWh: up 92% since 2001 (8.58¢ → 16.48¢)
-- Electricity consumption per household over that same window: virtually flat (+1%)
+- 2024 consumption: ~128K MMBtu — down 35% from peak
+- Nominal electricity price increase since 2001: 92% (8.58¢ → 16.48¢)
+- Real price increase since 2001 (inflation-adjusted): ~8% — electricity barely outpaced CPI
+- Average annual delta vs. inflation 2001–2024: 0.11% — essentially a wash
+- South Carolina: cleanest grid in the Southeast at ~60% clean generation in 2024
+- Mississippi: most fossil-fuel dependent at ~95% fossil in 2024
+- Georgia energy mix shift: ~64% fossil (2021) → ~54% fossil (2025), driven by Plant Vogtle nuclear units 3 & 4
 
 ## What I Learned as an Analyst
 
-EIA's public data is genuinely messy to work with — the API and the bulk file formats don't always agree with each other, MSN codes get silently truncated, and column names shift between datasets that are supposedly part of the same system. A lot of this project was less about the visualization and more about being stubborn enough to keep tracing errors back to their root instead of settling for a workaround. That persistence is its own kind of analyst skill.
+EIA's public data is genuinely messy to work with — the API and the bulk file formats don't always agree with each other, MSN codes get silently truncated, and column names shift between datasets that are supposedly part of the same system. A lot of this project was less about the visualization and more about being stubborn enough to keep tracing errors back to their root instead of settling for a workaround.
 
-The other thing I took away is how much normalization matters. Raw consumption totals go up almost every year just because the country has more people and more houses — that's not a story, that's just population growth. Per-household and per-capita framing is what turns a pile of numbers into something that actually means something.
+The bigger lesson came from the V2 iteration: publishing your work and inviting critique makes the analysis better. The 92% nominal price increase I highlighted originally isn't wrong — but it's incomplete without inflation context. That one piece of feedback from Matt turned a solid project into a more honest one.
 
 ## Files
 
 | File | Description |
 |---|---|
-| `py/01_pull_eia_api.py` | Pulls electricity sales & price from EIA API |
-| `py/02_pull_seds.py` | Pulls residential energy by fuel type from SEDS bulk file |
-| `py/03_merge_clean.py` | Merges, normalizes, and outputs the final dataset |
-| `csv/energy_consumption_final.csv` | Final Tableau/Power BI-ready dataset, 1960–2024 |
-| `Energy_Consumption_Analysis.pbix` | Power BI dashboard file |
-| `screenshots/dashboard-1-the-long-arc.png` | Dashboard 1 screenshot |
+| `py/01_pull_eia_api.py` | National electricity sales & price from EIA API |
+| `py/02_pull_seds.py` | Residential energy by fuel type from SEDS bulk file |
+| `py/03_merge_clean.py` | Merges, normalizes, outputs national dataset |
+| `py/04_etl_electricity_v2.py` | Southeast state-level ETL — prices, CPI adjustment, energy mix |
+| `csv/energy_consumption_final.csv` | Final national dataset, 1960–2024 |
+| `csv/electricity_vs_inflation.csv` | US + SE states, nominal vs. real price, 2001–2024 |
+| `csv/generation_by_source.csv` | SE state generation by fuel type, 2001–2024 |
+| `csv/combined_analysis.csv` | SE states price + energy mix merged, main Dashboard 3 source |
+| `Energy_Consumption_Analysis.pbix` | Power BI file — all three dashboards |
+| `screenshots/dashboard-1-the-efficiency-paradox.png` | Dashboard 1 screenshot |
 | `screenshots/dashboard-2-the-price-of-standing-still.png` | Dashboard 2 screenshot |
+| `screenshots/dashboard-3-the-real-price-of-power.png` | Dashboard 3 screenshot |
 
 ## Connect
 
