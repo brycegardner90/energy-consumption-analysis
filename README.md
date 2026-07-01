@@ -60,7 +60,7 @@ South Carolina and Tennessee run the cleanest grids in the region, with over 50%
 **Dashboard 1 — The Efficiency Paradox**
 The headline arc: total residential energy use per household from 1960–2024, with the fuel-type breakdown stacked underneath. Peak, latest, and percent decline called out as KPIs.
 
-![Dashboard 1 - The Efficiency Paradox](screenshots/dashboard-1-the-efficiency-paradox.png)
+![Dashboard 1 - The Efficiency Paradox](screenshots/dashboard-1-the-long-arc.png)
 
 **Dashboard 2 — The Price of Standing Still**
 2001–2024 only. Dual-axis line chart puts electricity consumption per household next to price per kWh — consumption is essentially flat, price is not. Total electricity sales volume and KPI cards complete the picture.
